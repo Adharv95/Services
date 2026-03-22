@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketMind | Simulations</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #07111f;
+      --card: #0d1a2be0;
+      --muted: #8ea0bf;
+      --text: #eef2ff;
+      --border: #94a3b82e;
+      --blue: #3b82f6;
+      --indigo: #6366f1;
+      --cyan: #22d3ee;
+      --green: #10b981;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+      --violet: #8b5cf6
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, #22d3ee20, transparent 24%), radial-gradient(circle at top right, #6366f130, transparent 28%), linear-gradient(180deg, #07101c, #08111f 55%, #060d17)
+    }
+
+    .header,
+    .row,
+    .grid,
+    .chips,
+    .actions {
+      display: flex
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: #07111fb8;
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border)
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      font: 700 1rem "Space Grotesk", sans-serif;
+      letter-spacing: .08em
+    }
+
+    .logo i {
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: .75rem;
+      background: #22d3ee22;
+      color: var(--cyan)
+    }
+
+    .nav,
+    .actions,
+    .row,
+    .chips {
+      gap: .75rem;
+      align-items: center
+    }
+
+    .nav a,
+    .ghost {
+      padding: .65rem .9rem;
+      border-radius: 999px;
+      color: var(--muted);
+      text-decoration: none
+    }
+
+    .nav a.active,
+    .nav a:hover,
+    .ghost {
+      background: #ffffff0b;
+      color: var(--text)
+    }
+
+    .container {
+      width: min(1160px, calc(100% - 1.5rem));
+      margin: 0 auto;
+      padding: 1.5rem 0 3rem
+    }
+
+    .hero h1 {
+      margin: 0;
+      font: 700 clamp(2rem, 5vw, 3.5rem) "Space Grotesk", sans-serif;
+      line-height: 1
+    }
+
+    .hero p {
+      max-width: 44rem;
+      color: var(--muted);
+      line-height: 1.7
+    }
+
+    .toggle {
+      display: flex;
+      width: max-content;
+      margin: 2rem auto;
+      padding: .35rem;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: var(--card)
+    }
+
+    .toggle button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: .85rem 1.4rem;
+      border-radius: 12px;
+      font: 700 .96rem "Space Grotesk", sans-serif;
+      cursor: pointer
+    }
+
+    .toggle .active {
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: #fff
+    }
+
+    .view {
+      display: none
+    }
+
+    .view.active {
+      display: block
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 1.3rem;
+      box-shadow: 0 18px 40px #00000025
+    }
+
+    textarea,
+    input {
+      width: 100%;
+      padding: .95rem 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #ffffff08;
+      color: var(--text);
+      font: inherit;
+      outline: none
+    }
+
+    textarea {
+      resize: vertical
+    }
+
+    .btn {
+      margin-top: 1rem;
+      border: 0;
+      border-radius: 16px;
+      padding: .95rem 1.2rem;
+      background: linear-gradient(135deg, var(--blue), var(--indigo));
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    .btn:disabled {
+      opacity: .75;
+      cursor: wait
+    }
+
+    .status {
+      display: none;
+      margin-top: 1rem;
+      padding: .8rem 1rem;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: #ffffff06
+    }
+
+    .status.show {
+      display: block
+    }
+
+    .status.error {
+      color: #fecaca;
+      background: #7f1d1d2b;
+      border-color: #ef444444
+    }
+
+    .chips {
+      flex-wrap: wrap;
+      margin: 1rem 0
+    }
+
+    .control-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-top: 1rem;
+      flex-wrap: wrap
+    }
+
+    .control-row label {
+      color: var(--muted);
+      font-size: .92rem
+    }
+
+    .select {
+      min-width: 190px;
+      padding: .95rem 1rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #ffffff08;
+      color: var(--text);
+      font: inherit;
+      outline: none
+    }
+
+    .chip {
+      padding: .55rem .85rem;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      background: #ffffff08;
+      font-size: .88rem
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.15fr .95fr;
+      gap: 1.25rem
+    }
+
+    .stack>*+* {
+      margin-top: 1.25rem
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem
+    }
+
+    .metric,
+    .impact-row,
+    .sector {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: #ffffff06
+    }
+
+    .metric {
+      padding: 1rem;
+      text-align: center
+    }
+
+    .impact-row,
+    .sector {
+      padding: .9rem 1rem
+    }
+
+    .roadmap,
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem
+    }
+
+    .roadmap .item {
+      padding: 1rem;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: #ffffff05;
+      border-left: 4px solid var(--border)
+    }
+
+    .urgent {
+      border-left-color: var(--red)
+    }
+
+    .warning {
+      border-left-color: var(--yellow)
+    }
+
+    .upcoming {
+      border-left-color: var(--blue)
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .badge {
+      padding: .35rem .65rem;
+      border-radius: 999px;
+      font-size: .84rem;
+      font-weight: 700
+    }
+
+    .green {
+      background: #10b98122;
+      color: #bbf7d0
+    }
+
+    .red {
+      background: #ef444422;
+      color: #fecaca
+    }
+
+    .yellow {
+      background: #f59e0b22;
+      color: #fde68a
+    }
+
+    .note {
+      padding: 1rem 1.1rem;
+      border-radius: 18px;
+      background: #22d3ee14;
+      border: 1px solid #22d3ee33;
+      color: #dbeafe
+    }
+
+    .news-grid {
+      display: grid;
+      grid-template-columns: .92fr 1.28fr;
+      gap: 1.25rem
+    }
+
+    .sectors {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem
+    }
+
+    @media (max-width:1024px) {
+      .header {
+        flex-wrap: wrap
+      }
+
+      .layout,
+      .news-grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media (max-width:720px) {
+
+      .mini-grid,
+      .sectors {
+        grid-template-columns: 1fr
+      }
+
+      .toggle {
+        width: 100%
+      }
+
+      .toggle button {
+        flex: 1
+      }
+
+      .control-row {
+        flex-direction: column;
+        align-items: stretch
+      }
+
+      .nav {
+        display: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="logo"><i class="fa-solid fa-cube"></i> MARKET<span style="color:var(--cyan)">MIND</span></div>
+    <nav class="nav row"><a href="#">Dashboard</a><a href="#" class="active">Simulations</a><a href="#">Funding</a><a
+        href="#">VC Forge</a><a href="#">Policies</a></nav>
+    <div class="actions"><span class="ghost"><i class="fa-regular fa-bell"></i></span><span class="ghost"><i
+          class="fa-solid fa-gear"></i></span></div>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <h1>Simulate startup moves before you spend the budget.</h1>
+      <p>Each form now talks to a backend API and replaces the static mock content with generated metrics, roadmap
+        steps, impact summaries, and charts.</p>
+    </section>
+
+    <div class="toggle">
+      <button id="btnMyself" class="active" onclick="switchSimMode('myself')">For Myself</button>
+      <button id="btnNews" onclick="switchSimMode('news')">News</button>
+    </div>
+
+    <section id="myselfView" class="view active">
+      <div class="card">
+        <h3><i class="fa-solid fa-lightbulb" style="color:var(--yellow)"></i> Enter Your Idea</h3>
+        <textarea id="ideaInput" rows="5" placeholder="Describe your startup idea, strategy, or plan..."></textarea>
+        <div class="control-row">
+          <label for="ideaLanguage">Response Language</label>
+          <select id="ideaLanguage" class="select">
+            <option value="auto">Auto detect</option>
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="es">Spanish</option>
+          </select>
+        </div>
+        <button id="myselfSubmit" class="btn" onclick="runMyselfSimulation()"><i
+            class="fa-solid fa-wand-magic-sparkles"></i> Generate Strategy</button>
+        <div id="myselfStatus" class="status"></div>
+      </div>
+      <div id="myselfResults" style="display:none">
+        <div id="ideaKeywords" class="chips"></div>
+        <div class="layout">
+          <div class="stack">
+            <div class="card">
+              <h3><i class="fa-solid fa-map-location-dot" style="color:var(--blue)"></i> Strategic Roadmap</h3>
+              <div id="roadmapList" class="roadmap"></div>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="mini-grid">
+              <div class="metric">
+                <div class="muted">Risk Level</div>
+                <div id="riskLevel" style="font-size:1.35rem;font-weight:700;color:var(--yellow)">-</div>
+              </div>
+              <div class="metric">
+                <div class="muted">Market Fit</div>
+                <div id="marketFit" style="font-size:1.35rem;font-weight:700;color:var(--green)">-</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="muted">Strategy Summary</div>
+              <p id="strategySummary"></p>
+            </div>
+            <div class="card">
+              <div class="muted">Growth Projections</div>
+              <div style="height:220px"><canvas id="growthChart"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="muted">Suggested Actions</div>
+              <ul id="suggestedActions" class="list"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="newsView" class="view">
+      <div class="card">
+        <h3><i class="fa-solid fa-newspaper" style="color:var(--cyan)"></i> Enter News or Event</h3>
+        <div class="mini-grid">
+          <input id="newsUrlInput" type="text" placeholder="Paste article URL...">
+          <textarea id="newsTextInput" rows="3" placeholder="Or paste news text here..."></textarea>
+        </div>
+        <div class="control-row">
+          <label for="newsLanguage">Response Language</label>
+          <select id="newsLanguage" class="select">
+            <option value="auto">Auto detect</option>
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="es">Spanish</option>
+          </select>
+        </div>
+        <button id="newsSubmit" class="btn" onclick="runNewsSimulation()"><i class="fa-solid fa-bolt"></i> Simulate
+          Impact</button>
+        <div id="newsStatus" class="status"></div>
+      </div>
+      <div id="newsResults" style="display:none">
+        <div id="newsThemes" class="chips"></div>
+        <div class="news-grid">
+          <div class="stack">
+            <div class="card">
+              <div class="muted">Market Impact</div>
+              <div id="marketImpactList" class="list"></div>
+            </div>
+            <div class="card">
+              <div class="muted">Global Effect</div>
+              <p id="globalEffect"></p>
+            </div>
+            <div class="mini-grid">
+              <div class="metric">
+                <div class="muted">Short Term</div>
+                <div id="shortTermOutlook" style="font-weight:700">-</div>
+              </div>
+              <div class="metric">
+                <div class="muted">Long Term</div>
+                <div id="longTermOutlook" style="font-weight:700">-</div>
+              </div>
+            </div>
+          </div>
+          <div class="stack">
+            <div class="card">
+              <div class="muted">Impact Visualization</div>
+              <div style="height:280px"><canvas id="newsImpactChart"></canvas></div>
+            </div>
+            <div class="card">
+              <div class="muted">Narrative Insight</div>
+              <div id="narrativeInsight" class="note"></div>
+            </div>
+            <div id="sectorGrid" class="sectors"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let growthChartInstance = null, newsImpactChartInstance = null;
+    const API_CANDIDATES = (() => {
+      const candidates = [];
+      if (window.location.protocol !== 'file:') candidates.push('');
+      if (window.location.origin !== 'http://127.0.0.1:8787') candidates.push('http://127.0.0.1:8787');
+      return candidates;
+    })();
+    const $ = (id) => document.getElementById(id);
+    function switchSimMode(mode) { const mine = mode === 'myself'; $('btnMyself').classList.toggle('active', mine); $('btnNews').classList.toggle('active', !mine); $('myselfView').classList.toggle('active', mine); $('newsView').classList.toggle('active', !mine) }
+    function esc(v) { return String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') }
+    function setStatus(id, message, error = false) { const el = $(id); el.className = 'status' + (message ? ' show' : '') + (error ? ' error' : ''); el.textContent = message || '' }
+    function setButton(id, loading, idle, spin) { const el = $(id); el.disabled = loading; el.innerHTML = loading ? spin : idle }
+    async function postJson(url, body) {
+      let lastError = null;
+      for (const base of API_CANDIDATES) {
+        try {
+          const res = await fetch(`${base}${url}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+          });
+
+          if (res.status === 404 || res.status === 405) {
+            lastError = new Error(`Request failed with status ${res.status}.`);
+            continue;
+          }
+
+          const raw = await res.text();
+          let data = null;
+
+          if (raw) {
+            try {
+              data = JSON.parse(raw);
+            } catch (error) {
+              const fallback = raw.trim().slice(0, 160);
+              throw new Error(fallback ? `Server returned a non-JSON response: ${fallback}` : 'Server returned an unreadable response.');
+            }
+          }
+
+          if (!res.ok) {
+            throw new Error((data && data.error) || `Request failed with status ${res.status}.`);
+          }
+
+          if (!data) {
+            throw new Error('Server returned an empty response. Make sure the backend is running and restart it after code changes.');
+          }
+
+          return data;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw new Error(lastError ? `${lastError.message} If you are testing locally, start this module with \`npm start\`.` : 'Unable to reach the simulation API.');
+    }
+
+    async function runMyselfSimulation() {
+      const idea = $('ideaInput').value.trim(); if (!idea) return setStatus('myselfStatus', 'Enter a startup idea so the backend has something to analyze.', true);
+      const language = $('ideaLanguage').value;
+      setButton('myselfSubmit', true, '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate Strategy', '<i class="fa-solid fa-spinner fa-spin"></i> Generating Strategy...'); setStatus('myselfStatus', 'Calling the backend and generating a tailored strategy simulation...');
+      try { const data = await postJson('/api/simulate/idea', { idea, language }); renderIdeaResults(data); $('myselfResults').style.display = 'block'; setStatus('myselfStatus', 'Strategy generated from your input.') }
+      catch (error) { setStatus('myselfStatus', error.message, true) }
+      finally { setButton('myselfSubmit', false, '<i class="fa-solid fa-wand-magic-sparkles"></i> Re-Generate Strategy', '') }
+    }
+
+    async function runNewsSimulation() {
+      const url = $('newsUrlInput').value.trim(), text = $('newsTextInput').value.trim(); if (!url && !text) return setStatus('newsStatus', 'Paste a URL or event text so the backend can simulate the impact.', true);
+      const language = $('newsLanguage').value;
+      setButton('newsSubmit', true, '<i class="fa-solid fa-bolt"></i> Simulate Impact', '<i class="fa-solid fa-spinner fa-spin"></i> Simulating Impact...'); setStatus('newsStatus', 'Sending the event to the backend and building a market impact scenario...');
+      try { const data = await postJson('/api/simulate/news', { url, text, language }); renderNewsResults(data); $('newsResults').style.display = 'block'; setStatus('newsStatus', 'Impact scenario generated from the submitted event.') }
+      catch (error) { setStatus('newsStatus', error.message, true) }
+      finally { setButton('newsSubmit', false, '<i class="fa-solid fa-bolt"></i> Re-Simulate Impact', '') }
+    }
+
+    function renderIdeaResults(data) {
+      $('riskLevel').textContent = data.metrics.riskLevel; $('marketFit').textContent = data.metrics.marketFit; $('strategySummary').textContent = data.summary;
+      $('ideaKeywords').innerHTML = data.keywords.map(k => `<span class="chip">${esc(k)}</span>`).join('');
+      $('roadmapList').innerHTML = data.roadmap.map(item => `<div class="item ${esc(item.tone)}"><strong>${esc(item.phase)}</strong><div class="muted" style="margin-top:.45rem">${esc(item.detail)}</div></div>`).join('');
+      $('suggestedActions').innerHTML = data.actions.map(a => `<li><i class="fa-solid fa-check" style="color:var(--green)"></i> ${esc(a)}</li>`).join('');
+      initGrowthChart(data.projections);
+    }
+
+    function renderNewsResults(data) {
+      $('newsThemes').innerHTML = data.themes.map(t => `<span class="chip">${esc(t)}</span>`).join('');
+      $('marketImpactList').innerHTML = data.marketImpact.map(item => `<div class="impact-row row" style="justify-content:space-between"><span>${esc(item.label)}</span><span class="badge ${esc(item.tone.replace('badge-', ''))}">${esc(item.value)}</span></div>`).join('');
+      $('globalEffect').textContent = data.globalEffect; $('shortTermOutlook').textContent = data.futurePrediction.shortTerm; $('longTermOutlook').textContent = data.futurePrediction.longTerm; $('narrativeInsight').textContent = data.narrativeInsight;
+      $('sectorGrid').innerHTML = data.sectors.map(s => `<div class="sector"><div><i class="${esc(s.icon)} ${esc(s.color)}"></i> <strong>${esc(s.name)}</strong></div><div class="muted" style="margin-top:.4rem">${esc(s.outlook)}</div></div>`).join('');
+      initNewsImpactChart(data.chart);
+    }
+
+    function initGrowthChart(p) { const ctx = $('growthChart').getContext('2d'); if (growthChartInstance) growthChartInstance.destroy(); growthChartInstance = new Chart(ctx, { type: 'bar', data: { labels: p.labels, datasets: [{ label: 'Projected Revenue ($)', data: p.values, backgroundColor: 'rgba(99,102,241,.42)', borderColor: '#818cf8', borderWidth: 1, borderRadius: 8 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#cbd5e1' } } }, scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,.04)' } }, y: { beginAtZero: true, ticks: { color: '#94a3b8', callback: (v) => '$' + Number(v).toLocaleString() }, grid: { color: 'rgba(255,255,255,.05)' } } } } }) }
+    function initNewsImpactChart(c) { const ctx = $('newsImpactChart').getContext('2d'); if (newsImpactChartInstance) newsImpactChartInstance.destroy(); newsImpactChartInstance = new Chart(ctx, { type: 'line', data: { labels: c.labels, datasets: c.datasets.map(d => ({ label: d.label, data: d.values, borderColor: d.borderColor, backgroundColor: 'transparent', borderWidth: 3, tension: .35, borderDash: d.borderDash || [] })) }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } }, scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,.04)' } }, y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,.05)' } } } } }) }
+  </script>
+</body>
+
+</html>
